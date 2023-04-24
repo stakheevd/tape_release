@@ -7,7 +7,7 @@ TapeConfigurator::TapeConfigurator(const std::string& filename)
   if (config_file.is_open())
   {
     config_file >> memory_limit;
-    if (memory_limit < 5)
+    if (memory_limit < 4)
       throw std::runtime_error("Minimum memory size: 4 bytes");
 
     config_file >> read_delay;
