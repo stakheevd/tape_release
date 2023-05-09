@@ -25,6 +25,7 @@ public:
   void open() override;
   void close() override;
   bool eof() override;
+  void reset_flags() override;
 
   ~TapeImpl() noexcept override;
 

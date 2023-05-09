@@ -12,6 +12,7 @@ public:
   virtual void open() = 0;
   virtual void close() = 0;
   virtual bool eof() = 0;
+  virtual void reset_flags() = 0;
 
   virtual ~TapeInterface() noexcept = default;
 };

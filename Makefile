@@ -2,8 +2,8 @@ all: build test
 .PHONY: all build run test clean
 
 build:
-	clang++ main.cpp TapeConfigurator.cpp TapeImpl.cpp TapeSorter.cpp -o tape
-	clang++ generator.cpp -o generator
+	clang++ -std=c++17 main.cpp TapeConfigurator.cpp TapeImpl.cpp TapeSorter.cpp -o tape
+	clang++ -std=c++17 generator.cpp -o generator
 
 run:
 	rm -f /tmp/temp_tape_*

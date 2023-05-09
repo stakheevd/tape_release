@@ -39,9 +39,12 @@ void TapeImpl::write(int32_t value)
 int32_t TapeImpl::read()
 {
   int32_t value = 0;
+  auto cur_pos = file_stream.tellg();
 
   if (!(file_stream >> value))
     throw std::runtime_error("Empty or incorrect input");
+
+  file_stream.seekg(cur_pos);
 
   std::this_thread::sleep_for(std::chrono::milliseconds(configurator.get_read_delay()));
 
@@ -59,7 +62,7 @@ void TapeImpl::rewind()
 
 void TapeImpl::move_forward()
 {
-  file_stream.ignore();
+  file_stream.ignore(std::numeric_limits<std::streamsize>::max(), ' ');
   file_stream.peek();
 
   std::this_thread::sleep_for(std::chrono::milliseconds(configurator.get_move_delay()));
@@ -70,25 +73,25 @@ void TapeImpl::move_backward()
   if (!file_stream.is_open())
     throw std::runtime_error("Tape is not open");
 
-  auto current_position = file_stream.tellg();
+  if (file_stream.tellg() == 0)
+  {
+   file_stream.setstate(std::ios::eofbit);
+   return;
+  }
 
-  if (current_position > 0)
+  while (file_stream.tellg() != 0 && file_stream.peek() != ' ')
+    file_stream.seekg(-1, std::ios::cur);
+
+  if (file_stream.peek() == ' ')
   {
     file_stream.seekg(-1, std::ios::cur);
 
-    if (file_stream.peek() == ' ')
-      file_stream.seekg(-1 * (sizeof(int32_t) + 1), std::ios::cur);
+    while (file_stream.tellg() != 0 && file_stream.peek() != ' ')
+      file_stream.seekg(-1, std::ios::cur);
   }
 
-  current_position = file_stream.tellp();
-
-  if (current_position > 0)
-  {
-    file_stream.seekp(-1, std::ios::cur);
-
-    if (file_stream.peek() == ' ')
-      file_stream.seekp(-1 * (sizeof(int32_t) + 1), std::ios::cur);
-  }
+  if (file_stream.peek() == ' ')
+    file_stream.seekg(1, std::ios::cur);
 
   std::this_thread::sleep_for(std::chrono::milliseconds(configurator.get_move_delay()));
 }
@@ -108,6 +111,11 @@ void TapeImpl::close()
 bool TapeImpl::eof()
 {
   return file_stream.eof();
+}
+
+void TapeImpl::reset_flags()
+{
+  file_stream.clear();
 }
 
 TapeImpl::~TapeImpl() noexcept

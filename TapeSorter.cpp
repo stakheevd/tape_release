@@ -36,7 +36,7 @@ void TapeSorter::sort()
       input_tape.move_forward();
     }
     
-    std::sort(std::begin(buffer), std::end(buffer));
+    std::sort(std::begin(buffer), std::end(buffer), std::greater<>());
 
     auto temp_tape = tape_factory("/tmp/temp_tape_" + std::to_string(temp_tape_counter++) + ".txt");
     temp_tapes.push_back(std::move(temp_tape));
@@ -45,10 +45,10 @@ void TapeSorter::sort()
     {
       temp_tapes.back()->write(value);
       temp_tapes.back()->move_forward();
+      temp_tapes.back()->reset_flags();
     }
 
-    temp_tapes.back()->rewind();
-    //temp_tapes.back()->close();
+    temp_tapes.back()->move_backward();
   }
 
   merge(temp_tapes, output_tape);
@@ -85,15 +85,11 @@ void TapeSorter::merge(std::vector<std::unique_ptr<TapeInterface>>& temp_tapes, 
                       std::vector<std::pair<int32_t, TapeInterface*>>, std::greater<>> pq;
 
   for (auto& tape : temp_tapes)
-  {
-    //tape->open();
     if (!tape->eof())
     {
       pq.push({tape->read(), tape.get()});
       tape->move_forward();
     }
-    //tape->close();
-  }
 
   while (!pq.empty())
   {
@@ -103,12 +99,10 @@ void TapeSorter::merge(std::vector<std::unique_ptr<TapeInterface>>& temp_tapes, 
     output_tape.write(value);
     output_tape.move_forward();
 
-    //tape->open();
     if (!tape->eof())
     {
       pq.push({tape->read(), tape});
       tape->move_forward();
     }
-    //tape->close();
   }
 }
