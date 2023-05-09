@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <queue>
 #include <functional>
 #include <memory>
 #include <algorithm>
@@ -22,5 +23,5 @@ private:
   int32_t memory_limit;
   std::function<std::unique_ptr<TapeInterface>(const std::string&)> tape_factory;
 
-  void merge(TapeInterface& left_tape, TapeInterface& right_tape, TapeInterface& output_tape);
+  void merge(std::vector<std::unique_ptr<TapeInterface>>& temp_tapes, TapeInterface& output_tape);
 };
